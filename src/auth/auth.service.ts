@@ -1,25 +1,21 @@
-import { throwError } from 'rxjs';
+import { Injectable } from '@nestjs/common';
+import { UserService } from '../user/user.service';
 import { signToken } from './jwt.util';
-import RunTimeDatabase from 'src/libs/helper/runTimeDatabase';
 
+@Injectable()
 export class AuthService {
-	private db = RunTimeDatabase.getInstance();
+  constructor(private userService: UserService) {}
 
-	login(usertype:string,username: string, password: string) {
-		const users = this.db.values();
-		const user = users.find(
-			u => u.username === username && u.password === password
-		);
+  login(usertype: string, username: string, password: string) {
+    const users = this.userService.getUser();
+    const user = users.find(
+      u => u.username === username && u.password === password
+    );
 
-		if (!user) throw new Error('Invalid credentials');
-		if( user.usertype==='student') throw new Error('Access Denied for Student')
+    if (!user) throw new Error('Invalid credentials');
+    if (user.usertype === 'student') throw new Error('Access Denied for Student');
 
-		const token = signToken({ 
-			id: user.id, 
-			usertype: user.usertype 
-		});
-		this.db.set(`token:${token}`, true);
-
-		return { token };
-	}
+    const token = signToken({ id: user.id, usertype: user.usertype });
+    return { token };
+  }
 }

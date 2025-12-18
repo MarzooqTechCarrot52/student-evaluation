@@ -1,58 +1,66 @@
-import { AcademicRecord } from './academic.interface';
-import RunTimeDatabase from 'src/libs/helper/runTimeDatabase';
 import { randomUUID } from 'crypto';
 import { Injectable } from '@nestjs/common';
 import { AcademicRecordDTO } from './academic.dto';
 
+export interface AcademicRecord {
+  studentId: string;
+  teacherId: string;
+  subject: string;
+  acquiredMark: number;
+  maximumMark: number;
+}
+
 export interface StudentScoreWithRank {
   studentId: string;
   totalmark: number;
-  rank?: number; 
+  rank?: number;
 }
 
 @Injectable()
 export class AcademicService {
-	private db = RunTimeDatabase.getInstance();
-	addMark(record:AcademicRecordDTO) {
-    const id = randomUUID()
-		const newRecord = { ...record};
-		this.db.set(id,newRecord)
-		return newRecord
-	}
-  
+  // Local in-memory DB for academic records
+  private academicRecords = new Map<string, AcademicRecord>();
 
-  getMark(){
-    let academic = this.db.values()
-    return academic
+  // Add a new academic record
+  addMark(record: AcademicRecordDTO): AcademicRecord {
+    const id = randomUUID();
+    const newRecord: AcademicRecord = { ...record };
+    this.academicRecords.set(id, newRecord);
+    return newRecord;
   }
-  getOneMark(studentId: string) {
-		let academics = this.db.values()
-		if(studentId){ 
-		academics =	academics.filter(a => a.studentId === studentId);
-	}
-	return academics
-}
-  getRanks() {
-    const records = this.db.values(); 
-    const total= {};
-    for (const r of records) {
-        if (!total[r.studentId]) {
-          total[r.studentId] = 0;
-        }
-        total[r.studentId] += r.acquiredMark;
+
+  // Get all academic records
+  getMark(): AcademicRecord[] {
+    return Array.from(this.academicRecords.values());
+  }
+
+  // Get all records for a specific student
+  getOneMark(studentId: string): AcademicRecord[] {
+    return Array.from(this.academicRecords.values()).filter(
+      r => r.studentId === studentId
+    );
+  }
+
+  // Calculate total marks and ranks
+  getRanks(): StudentScoreWithRank[] {
+    const totals: Record<string, number> = {};
+
+    for (const r of this.academicRecords.values()) {
+      totals[r.studentId] ??= 0;
+      totals[r.studentId] += r.acquiredMark;
     }
 
-    const data: StudentScoreWithRank[] = [];
-    for (const studentId in total) {
-      data.push({ studentId, totalmark: total[studentId] });
-    }
+    const data: StudentScoreWithRank[] = Object.entries(totals).map(
+      ([studentId, totalmark]) => ({ studentId, totalmark })
+    );
 
     data.sort((a, b) => b.totalmark - a.totalmark);
- 
+
     for (let i = 0; i < data.length; i++) {
-        data[i].rank = i + 1;
+      data[i].rank = i + 1;
     }
 
     return data;
-}
+  }
+
 }
