@@ -1,0 +1,9 @@
+export type userType = 'teacher'|'student'|'management'
+
+export interface User {
+    id?:string
+    name: string
+    username: string
+    password: string
+    usertype: userType
+}
