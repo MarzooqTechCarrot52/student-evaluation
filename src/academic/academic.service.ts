@@ -57,9 +57,13 @@ export class AcademicService {
     data.sort((a, b) => b.totalmark - a.totalmark);
 
     for (let i = 0; i < data.length; i++) {
+      if(i>0 && data[i].totalmark === data[i-1].totalmark){
+        data[i].rank = data[i-1].rank
+      }
+      else{
       data[i].rank = i + 1;
     }
-
+  }
     return data;
   }
 

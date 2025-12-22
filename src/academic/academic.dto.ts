@@ -7,6 +7,14 @@ export class AcademicRecordDTO {
 
   @IsString()
   @IsNotEmpty()
+  teacherId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  studentId: string;
+
+  @IsString()
+  @IsNotEmpty()
   subject: string;
 
   @IsNumber()
@@ -19,11 +27,4 @@ export class AcademicRecordDTO {
   @Max(100)
   maximumMark: number;
 
-  @IsString()
-  @IsNotEmpty()
-  teacherId: string;
-
-  @IsString()
-  @IsNotEmpty()
-  studentId: string;
 }
